@@ -4,7 +4,7 @@ use std::env;
 #[get("/")]
 async fn get_ip(req: HttpRequest) -> impl Responder {
     if let Some(peer_addr) = req.peer_addr() {
-        format!("Your IP: {}", peer_addr.ip())
+        format!("IP: {}", peer_addr.ip())
     } else {
         "Cannot determine IP".to_string()
     }
