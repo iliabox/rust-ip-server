@@ -10,7 +10,8 @@ async fn get_ip(req: HttpRequest) -> impl Responder {
     } else if let Some(forwarded) = req.headers().get("X-Forwarded-For") {
         forwarded.to_str().unwrap_or("Unknown X-Forwarded-For").split(',').next().unwrap_or("Unknown").trim()
     } else if let Some(peer_addr) = req.peer_addr() {
-        peer_addr.ip().to_string().as_str()
+        let ip_str = peer_addr.ip().to_string();
+        ip_str.as_str()
     } else {
         "Cannot determine IP"
     };
