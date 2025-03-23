@@ -36,7 +36,7 @@ jobs:
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-          CONTAINER_ID: "bec7d404-5ced-446a-b273-198fee08b94e"
+          CONTAINER_ID:  ${{ secrets.CONTAINER_ID }}
         run: |
           curl -X POST \
             -H "X-Auth-Token: $SCW_SECRET_KEY" \
