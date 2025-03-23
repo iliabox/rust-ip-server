@@ -3,24 +3,30 @@ use std::env;
 
 #[get("/")]
 async fn get_ip(req: HttpRequest) -> impl Responder {
-    if let Some(cf_ip) = req.headers().get("CF-Connecting-IP") {
-        if let Ok(ip_str) = cf_ip.to_str() {
-            return format!("IP: {}", ip_str);
-        }
-    }
+    let mut response = String::new();
 
-    if let Some(forwarded) = req.headers().get("X-Forwarded-For") {
-        if let Ok(forwarded_str) = forwarded.to_str() {
-            let client_ip = forwarded_str.split(',').next().unwrap_or("Unknown").trim();
-            return format!("IP: {}", client_ip);
-        }
-    }
-
-    if let Some(peer_addr) = req.peer_addr() {
-        format!("IP: {}", peer_addr.ip())
+    let client_ip = if let Some(cf_ip) = req.headers().get("CF-Connecting-IP") {
+        cf_ip.to_str().unwrap_or("Unknown CF-Connecting-IP")
+    } else if let Some(forwarded) = req.headers().get("X-Forwarded-For") {
+        forwarded.to_str().unwrap_or("Unknown X-Forwarded-For").split(',').next().unwrap_or("Unknown").trim()
+    } else if let Some(peer_addr) = req.peer_addr() {
+        peer_addr.ip().to_string().as_str()
     } else {
-        "Cannot determine IP".to_string()
+        "Cannot determine IP"
+    };
+
+    response.push_str(&format!("IP: {}\n\n", client_ip));
+    response.push_str("Request Headers:\n");
+
+    for (key, value) in req.headers().iter() {
+        if let Ok(value_str) = value.to_str() {
+            response.push_str(&format!("{}: {}\n", key, value_str));
+        } else {
+            response.push_str(&format!("{}: <non-UTF8 value>\n", key));
+        }
     }
+
+    response
 }
 
 #[actix_web::main]
