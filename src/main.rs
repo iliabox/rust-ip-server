@@ -6,14 +6,13 @@ async fn get_ip(req: HttpRequest) -> impl Responder {
     let mut response = String::new();
 
     let client_ip = if let Some(cf_ip) = req.headers().get("CF-Connecting-IP") {
-        cf_ip.to_str().unwrap_or("Unknown CF-Connecting-IP")
+        cf_ip.to_str().unwrap_or("Unknown CF-Connecting-IP").to_string()
     } else if let Some(forwarded) = req.headers().get("X-Forwarded-For") {
-        forwarded.to_str().unwrap_or("Unknown X-Forwarded-For").split(',').next().unwrap_or("Unknown").trim()
+        forwarded.to_str().unwrap_or("Unknown X-Forwarded-For").split(',').next().unwrap_or("Unknown").trim().to_string()
     } else if let Some(peer_addr) = req.peer_addr() {
-        let ip_str = peer_addr.ip().to_string();
-        ip_str.as_str()
+        peer_addr.ip().to_string()
     } else {
-        "Cannot determine IP"
+        "Cannot determine IP".to_string()
     };
 
     response.push_str(&format!("IP: {}\n\n", client_ip));
