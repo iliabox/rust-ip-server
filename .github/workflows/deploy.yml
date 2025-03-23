@@ -41,5 +41,5 @@ jobs:
           curl -X POST \
             -H "X-Auth-Token: $SCW_SECRET_KEY" \
             -H "Content-Type: application/json" \
-            "https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/$CONTAINER_ID/redeploy" \
+            "https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/$CONTAINER_ID/deploy" \
             -d '{}'
