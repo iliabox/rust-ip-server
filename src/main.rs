@@ -2,24 +2,25 @@ use actix_web::{get, App, HttpServer, HttpRequest, Responder};
 use std::env;
 
 #[get("/")]
-async fn get_headers(req: HttpRequest) -> impl Responder {
-    let mut headers_info = String::new();
+async fn get_ip(req: HttpRequest) -> impl Responder {
+    if let Some(cf_ip) = req.headers().get("CF-Connecting-IP") {
+        if let Ok(ip_str) = cf_ip.to_str() {
+            return format!("IP: {}", ip_str);
+        }
+    }
 
-    for (header_name, header_value) in req.headers().iter() {
-        if let Ok(name) = header_name.to_str() {
-            if let Ok(value) = header_value.to_str() {
-                headers_info.push_str(&format!("{}: {}\n", name, value));
-            }
+    if let Some(forwarded) = req.headers().get("X-Forwarded-For") {
+        if let Ok(forwarded_str) = forwarded.to_str() {
+            let client_ip = forwarded_str.split(',').next().unwrap_or("Unknown").trim();
+            return format!("IP: {}", client_ip);
         }
     }
 
     if let Some(peer_addr) = req.peer_addr() {
-        headers_info.push_str(&format!("Peer IP: {}\n", peer_addr.ip()));
+        format!("IP: {}", peer_addr.ip())
     } else {
-        headers_info.push_str("Cannot determine Peer IP\n");
+        "Cannot determine IP".to_string()
     }
-
-    headers_info
 }
 
 #[actix_web::main]
@@ -29,7 +30,9 @@ async fn main() -> std::io::Result<()> {
         .parse()
         .expect("PORT must be a valid number");
 
-    HttpServer::new(|| App::new().service(get_headers))
+    println!("Server running on port {}", port);
+
+    HttpServer::new(|| App::new().service(get_ip))
         .bind(("0.0.0.0", port))?
         .run()
         .await
