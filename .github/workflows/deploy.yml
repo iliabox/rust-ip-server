@@ -32,14 +32,14 @@ jobs:
           tags: ${{ secrets.SCW_REGISTRY }}/ip-server:latest
           platforms: linux/amd64
 
-      - name: Install Scaleway CLI
-        run: |
-          curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sh
-
-      - name: Redeploy Scaleway Container
+      - name: Restart Scaleway Container
         env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          CONTAINER_ID: "bec7d404-5ced-446a-b273-198fee08b94e"
         run: |
-          scw config set access-key=$SCW_ACCESS_KEY secret-key=$SCW_SECRET_KEY
-          scw container container deploy name=container-ip-server image=${{ secrets.SCW_REGISTRY }}/ip-server:latest --wait
+          curl -X POST \
+            -H "X-Auth-Token: $SCW_SECRET_KEY" \
+            -H "Content-Type: application/json" \
+            "https://api.scaleway.com/containers/v1beta1/regions/fr-par/containers/$CONTAINER_ID/redeploy" \
+            -d '{}'
